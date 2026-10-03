@@ -2,34 +2,107 @@ PHIẾU CÁ NHÂN — DAY 14
 Annotation nộp bằng Save/completed trên CVAT. Coach thu/review riêng.
 
 Packet / slot / case / lượt:
+Task local Day14 NguyenChiBang. Lượt 1, case lõi J01 (66 frame). Chưa mở mini-job B/M/H.
+Nguồn phiếu: export Datumaro 3D 1.0
+job_35_annotations_2026_10_03_04_45_19_datumaro 3d 1.0.zip (một file annotations/default.json).
+
 Task / job:
+Task 34 / job 35. Label vehicles, một cuboid_3d.
+
 Track CVAT / object được giao:
+Track id 0, group 0, label_id 0. Một object suốt 66 frame. Không có track thứ hai.
+
 Phạm vi local frame / source frame:
+Local 0–65, source 0–65, đúng frame-map J01.
+Frame 0: 1772259100-099741459
+Frame 65: 1772259112-999721289
+
 Guideline / profile calibration đã đọc:
+docs/lab.md, docs/huong-dan-hinh.md.
+private/calib-diagnostic.json: pcd_frame=lidar, camera trước CAM_P_F = image_1, ảnh 1920×1536.
+Không sửa số calibration.
 
 Frame fit và lý do:
+Frame 0. Object gần nhất cả track (tâm cách gốc LiDAR 3.9 m, vị trí x=-0.08, y=-3.78, z=0.86). Các frame sau xa dần tới 28.4 m ở frame 65, nên không lấy frame xa làm kích thước.
+
 L / W / H (m):
+2.20 × 0.89 × 1.65 trên 64/66 frame (scale Datumaro = L, W, H).
+Lệch duy nhất: frame 41 W=0.98, frame 42 W=0.93, frame 43 trả về 0.89.
+L drift 0%, H drift 0%, W drift 9.2% (0.89–0.98), vượt heuristic 5% của toolkit.
+
 Keyframe quan trọng và lý do:
+Cả 66 frame đều là keyframe (66/66). Không có frame nội suy.
+Mốc đáng ghi:
+- Frame 0: lập kích thước, object gần nhất.
+- Frame 32–48: heading đổi rõ, yaw từ khoảng -13° tới -46° rồi quay lại gần -37°. Bước giữa hai frame liền kề vẫn dưới 10°.
+- Frame 59–65: yaw từ -36° về +7°. Bước lớn nhất 12° (frame 59→60), không phải flip ~180°.
+- Frame 65: mốc cuối, object xa nhất.
+
 Frame nội suy đã kiểm:
+Không có. Export đánh keyframe=true ở mọi frame, nên không có đoạn tool nội suy để kiểm. Quỹ đạo đọc trực tiếp từng frame: một ID liên tục, không đứt.
+
 Đoạn thưa / che khuất / dễ nhầm identity:
+occluded=false mọi frame. Export không bật outside.
+Khoảng cách tâm LiDAR: 3.9 m (frame 0) → 28.4 m (frame 65).
+Bước tâm lớn nhất 1.56 m (frame 57→58), dưới ngưỡng nhảy 3 m. Chỉ một track, không có cặp ID sát nhau.
+Từ frame 40 trở đi tâm cuboid nằm sau camera trước (Z camera âm). Đoạn này thưa dần và ra khỏi FOV image_1, không phải mất identity.
 
 Phát hiện temporal và frame/evidence:
+- dimension_drift: W frame 41–42 (0.98 rồi 0.93) so với 0.89 còn lại.
+- no_interpolation: 66/66 keyframe. Cờ toolkit, không phải hai object bị nối.
+- Không có orientation_flip, position_jump, track_gap, fragmentation. Track có mặt từ frame 0 đến 65.
+- Heading đổi có chủ đích ở đoạn 32–48 và 59–65; bước một frame không vượt 25°.
+
 Quyết định độc lập trước review:
+Giữ một track, một kích thước tham chiếu 2.20 × 0.89 × 1.65, không tách ID khi object ra sau ego.
+Hai frame 41–42 là chỗ W bị kéo lệch; nếu rework thì gõ lại W=0.89, không đổi L/H.
+
 Phản hồi nhận được:
+Chưa có review của Coach hay bạn cùng cặp.
+
 Hành động sau review và lý do:
+Chưa rework sau review. Việc nên làm khi sửa: trả W frame 41 và 42 về 0.89 cho khớp kích thước đã chốt ở frame 0.
 
 Ca bình thường Camera–LiDAR (frame/camera/quan sát):
+Frame 16, camera image_1 (CAM_P_F), item 1772259103-299843311.
+Tâm cuboid chiếu sát mép phải ảnh (khoảng u=2180, ảnh rộng 1920), Z camera khoảng 4.1 m. Cùng phía với xe bên phải làn. Kích thước vẫn 2.20 × 0.89 × 1.65. Đây là ca còn nhìn được một phần trên camera trước, không phải ca lệch cả cảnh.
+
 Ca khó (frame/camera/quan sát 2D, 3D):
+Frame 41, rồi cả đoạn 40–65, camera image_1.
+Frame 41: W bị kéo thành 0.98; tâm đã ở sau camera (Z camera khoảng -1 m), 8 góc không chiếu lên ảnh.
+Frame 65: tâm LiDAR (-24.61, -14.09, 1.38), cách gốc 28.4 m, yaw +7°, Z camera khoảng -25 m. image_1 không chứa object. 3D vẫn một hộp cùng L/H, dịch tiếp ra phía sau.
+
 Giả thuyết nguyên nhân / giới hạn kết luận:
+Đoạn sau frame 40 là ra khỏi FOV camera trước, khớp quỹ đạo đi về phía sau ego. Không đủ để kết luận calibration sai: lệch không được kiểm trên nhiều object, và profile camera trước không dùng cho các camera còn lại.
+Chưa có ảnh overlay do Coach render từ đúng revision này. Nhận xét 2D ở trên là phép chiếu tám góc bằng calib-diagnostic.json, không phải ảnh overlay đã lưu.
+W=0.89 hẹp hơn xe con thông thường. Phiếu không đổi kích thước chỉ để hết cờ; người review cần nhìn cụm điểm frame 0 trước khi kết luận hộp thiếu bề ngang.
+
 Hành động sửa / giữ / escalation và người nhận:
+Giữ track và không bật outside cho đoạn sau frame 40.
+Sửa khi rework: W frame 41–42 về 0.89. Người nhận phần chưa chốt bề ngang: Lab Coach, kèm frame 0 và frame 41.
 
 Đã Save và mở lại kiểm:
+Đã Save: có export Datumaro 3D 1.0 từ job 35 lúc 2026-10-03 04:45 UTC.
+Chưa ghi nhận lần mở lại job sau export.
+
 Trạng thái job cuối / blocker:
+Job 35 đã có annotation đủ 66 frame. Chưa chuyển completed trong phiếu này. Chưa có blocker dữ liệu. Overlay local đã bật; CVAT máy này là 2.75.1, plugin được kiểm trên 2.74.1.
 
 TỔNG KẾT BỘ JOB
 Job đã bắt đầu:
+J01 = task 34 / job 35, local 0–65.
+
 Job đã Save/completed:
+J01 đã Save và đã export. Chưa đánh dấu completed trên phiếu.
+
 Job chưa bắt đầu:
+B01–B06, M01–M07, H01–H06. B01 trong frame-map là source 16–21 của cùng sequence, không phải job CVAT riêng.
+
 Job còn cần rework / blocker:
+J01: trả W frame 41–42 về 0.89 sau khi Coach xem frame 0. Không blocker tool.
+
 Mẫu peer check và phản hồi:
+Chưa có.
+
 Thời gian làm J01 / mini-job / self-QC:
+Không ước lượng phút. Self-QC trong phiếu đọc từ export job 35, không từ qc_flags.csv của Coach.
